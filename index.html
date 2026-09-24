@@ -1293,7 +1293,7 @@ function renderChecklist() {
   }
 
   html += `<button class="cl-reset-btn" onclick="resetChecklist()">${type === 'weekly' && selectedDay !== 'all' ? `RESET ${dayNames[selectedDay].toUpperCase()} TASKS` : `RESET ALL ${type.toUpperCase()} ${type === 'stock' ? 'FLAGS' : 'TASKS'}`}</button>
-      <div class="cl-date">${type === 'stock' ? 'FLAGS PERSIST UNTIL MANUALLY CLEARED' : dateStr.toUpperCase() + ' · RESETS AT 5AM'}</div>
+      <div class="cl-date">${type === 'stock' ? 'FLAGS PERSIST UNTIL MANUALLY CLEARED' : type === 'weekly' ? 'WEEKLY TASKS RESET MONDAY AT 5AM' : dateStr.toUpperCase() + ' · RESETS AT 5AM'}</div>
     </div>
   </div>`;
   return html;
