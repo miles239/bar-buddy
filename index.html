@@ -302,6 +302,7 @@ html{scroll-behavior:smooth}html[data-theme="dark"]{color-scheme:dark}body{backg
 .checklist-overview{border-radius:18px;background:#1c1e21;box-shadow:none}.overview-copy small,.progress-ring small{font-size:10px}.overview-copy h1{font-size:24px}.overview-copy p{color:#c4c2c2;font-size:12px}.cl-tab{min-height:44px;font-size:11px}.cl-subtitle{font-size:12px;color:#b9b6b5}.cl-section-title{font-size:15px}.cl-text{font-size:15px}.cl-item{border-radius:13px;background:#1d2023}.cl-item.done .cl-text{color:#b5d6ba}.cl-reset-btn{font-size:13px}
 html[data-theme="light"]{--bb-text:#242326;--bb-sub:#535159;--bb-edge:rgba(31,29,27,.13)}html[data-theme="light"] body{background:#f1eee9;color:#232226}html[data-theme="light"] .home-topbar{background:rgba(246,243,239,.96)}html[data-theme="light"] .logo em{color:#242326}html[data-theme="light"] .sublogo{color:#67636a}html[data-theme="light"] .icon-btn{color:#29272a;background:#fff}html[data-theme="light"] .command-deck,html[data-theme="light"] .card,html[data-theme="light"] .section,html[data-theme="light"] .batch-calc,html[data-theme="light"] .checklist-overview,html[data-theme="light"] .cl-item{background:#fff;box-shadow:0 6px 18px rgba(46,35,31,.045)}html[data-theme="light"] .command-deck .search{background:#f4f1ed;color:#202024}html[data-theme="light"] .command-deck .mode-toggle{background:#eeeae5}html[data-theme="light"] .command-deck .mode-btn.active{background:#fff}html[data-theme="light"] .command-deck .filter-btn{background:#f2efeb;color:#353236}html[data-theme="light"] .command-deck .filter-btn.active{background:#d63934;color:#fff}html[data-theme="light"] .card-name,html[data-theme="light"] .ingredient span{color:#262427}html[data-theme="light"] .card-meta{color:#64616a}html[data-theme="light"] .detail,html[data-theme="light"] .checklist-overlay{background:#f1eee9}html[data-theme="light"] .detail-header,html[data-theme="light"] .checklist-header{background:rgba(246,243,239,.96)}html[data-theme="light"] .archive-alert{background:#fff1ed;color:#8d2521}
 @media(min-width:620px){#app{max-width:760px;background:transparent;border:0;box-shadow:none}.home-topbar{border-radius:0}.home-hero{min-height:148px}.command-deck .filters{display:flex;grid-template-columns:none}.detail,.checklist-overlay{max-height:none;border-radius:0}.detail-body,.checklist-body{max-width:700px}}@media(max-width:390px){.sublogo{font-size:8px}.logo{font-size:22px}.brand-lockup{gap:7px}.header-actions{gap:5px}.icon-btn{width:39px;height:39px;min-height:39px}.command-deck .filter-btn{padding:0 11px}.hero-glass{opacity:.26}}@media(prefers-reduced-motion:reduce){.ambient-field{display:none}.card{animation:none!important}}
+ .daily-pulse-slot{margin:12px 14px 0}.daily-pulse{padding:14px 15px 15px;border:1px solid var(--bb-edge);border-radius:16px;background:#1b1d20}.daily-pulse-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}.daily-pulse-kicker{display:block;color:#fb817b;font-size:10px;font-weight:800;letter-spacing:1px}.daily-pulse h2{margin:3px 0 0;color:#f7f4f2;font-size:17px;line-height:1.2}.daily-pulse-total{color:#b9b6b5;font-size:11px;white-space:nowrap}.daily-pulse-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.daily-pulse-option{min-width:0;min-height:94px;padding:11px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:#26282b;color:#f5f3f2;text-align:left;cursor:pointer}.daily-pulse-row{display:flex;align-items:center;justify-content:space-between;gap:4px;font-size:13px}.daily-pulse-row strong{font-weight:750}.daily-pulse-row>span{color:#ddd9d7;white-space:nowrap}.daily-pulse-row b{margin-left:3px;color:#fa817c;font-size:20px;line-height:0}.daily-pulse-track{display:block;height:5px;margin:10px 0 8px;border-radius:10px;background:#45464a;overflow:hidden}.daily-pulse-track i{display:block;height:100%;border-radius:inherit;background:#ed504a}.daily-pulse-next{display:-webkit-box;overflow:hidden;color:#c1bec0;font-size:10px;line-height:1.3;-webkit-box-orient:vertical;-webkit-line-clamp:2}.daily-pulse-option:focus-visible{outline:2px solid #ff827c;outline-offset:3px}.daily-pulse-option:active{transform:scale(.98)}html[data-theme="light"] .daily-pulse{background:#fff}html[data-theme="light"] .daily-pulse h2{color:#262427}html[data-theme="light"] .daily-pulse-total{color:#67636a}html[data-theme="light"] .daily-pulse-option{background:#f5f2ee;border-color:rgba(31,29,27,.1);color:#272529}html[data-theme="light"] .daily-pulse-row>span,html[data-theme="light"] .daily-pulse-next{color:#625e62}html[data-theme="light"] .daily-pulse-track{background:#ded9d5}@media(max-width:374px){.daily-pulse-options{gap:6px}.daily-pulse-option{padding:9px}.daily-pulse-row{font-size:12px}}
 </style>
 </head>
 <body>
@@ -1142,6 +1143,30 @@ function getChecklistItems(type) {
   return cl.sections.flatMap(s => s.items);
 }
 
+function dailyProgress(type) {
+  const items = getChecklistItems(type);
+  const checks = state.checklistState.checks || {};
+  const done = items.filter(item => checks[`${type}:${item}`]).length;
+  return {done, total: items.length, next: items.find(item => !checks[`${type}:${item}`])};
+}
+
+function renderDailyPulse() {
+  const opening = dailyProgress("opening");
+  const closing = dailyProgress("closing");
+  const total = opening.total + closing.total;
+  const done = opening.done + closing.done;
+  return `<section class="daily-pulse" aria-label="Today's bar checklists">
+    <div class="daily-pulse-head"><div><span class="daily-pulse-kicker">SHIFT ROUTINE</span><h2>Today's checklists</h2></div><span class="daily-pulse-total">${done} / ${total} done</span></div>
+    <div class="daily-pulse-options">
+      ${[["opening",opening],["closing",closing]].map(([type,p]) => `<button class="daily-pulse-option" onclick="openChecklistAt('${type}')" aria-label="Open ${type} checklist, ${p.done} of ${p.total} tasks done">
+        <span class="daily-pulse-row"><strong>${type === "opening" ? "Opening" : "Closing"}</strong><span>${p.done}/${p.total} <b aria-hidden="true">›</b></span></span>
+        <span class="daily-pulse-track" aria-hidden="true"><i style="width:${p.total ? Math.round(p.done / p.total * 100) : 0}%"></i></span>
+        <span class="daily-pulse-next">${p.next ? `Next: ${escapeHtml(p.next)}` : "All tasks complete"}</span>
+      </button>`).join("")}
+    </div>
+  </section>`;
+}
+
 function renderChecklist() {
   const type = state.checklist;
   const cl = CHECKLISTS[type];
@@ -1593,6 +1618,7 @@ function render() {
     window.scrollTo(0, 0);
     return;
   }
+  loadChecklistState();
   const filtered = getFiltered();
   const totalReferences = RECIPES.length + CLASSICS.length + DISCONTINUED.length;
   let html = `${ambientDecor()}<div class="home-topbar">
@@ -1609,15 +1635,6 @@ function render() {
         <button class="icon-btn theme-toggle" aria-label="Switch to ${state.theme === 'dark' ? 'light' : 'dark'} mode" title="${state.theme === 'dark' ? 'Light' : 'Dark'} mode" onclick="toggleTheme()">${uiIcon(state.theme === 'dark' ? 'sun' : 'moon')}</button>
       </div>
     </div>
-    <section class="home-hero">
-      <div class="hero-grid"></div><div class="hero-glow"></div><div class="hero-streaks" aria-hidden="true"><i></i><i></i><i></i></div><div class="hero-bubbles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-      <div class="home-hero-copy">
-        <div class="service-status"><i></i> LIVE BAR REFERENCE</div>
-        <h1>Built for the bar.<br><span>Ready for service.</span></h1>
-        <p>${RECIPES.length} current specs · ${Object.keys(BATCH_DATA).length} batch formulas · ${CLASSICS.length} classics</p>
-      </div>
-      <div class="hero-glass" aria-hidden="true">${uiIcon('drink')}<span></span></div>
-    </section>
     <section class="command-deck">
       <div class="command-label"><span>RECIPE LIBRARY</span><small>${state.showFavoritesOnly ? 'FAVOURITES ONLY' : state.mode === 'tgi' ? 'CURRENT MENU' : state.mode === 'classics' ? 'OFF-MENU LIBRARY' : 'ARCHIVED RECIPES'}</small></div>
       <div class="mode-toggle">
@@ -1646,7 +1663,7 @@ function render() {
       }).join('')}</div>`;
     }
   }
-  html += `<div class="results">${resultsHTML(filtered)}</div>`;
+  html += `<div class="daily-pulse-slot" style="${state.search ? 'display:none' : ''}">${renderDailyPulse()}</div><div class="results">${resultsHTML(filtered)}</div>`;
   app.innerHTML = html;
   const fc = document.querySelector(".filters"), sc = document.querySelector(".subfilters");
   if (state.search) { if (fc) fc.style.display = "none"; if (sc) sc.style.display = "none"; }
@@ -1823,6 +1840,8 @@ window.onSearch = function(v) {
   results.innerHTML = resultsHTML(getFiltered());
   const show = v ? "none" : "";
   document.querySelectorAll(".filters, .subfilters").forEach(el => { el.style.display = show; });
+  const pulse = document.querySelector(".daily-pulse-slot");
+  if (pulse) pulse.style.display = show;
   const clear = document.querySelector(".search-clear");
   if (clear) clear.style.display = v ? "" : "none";
 };
@@ -1870,18 +1889,19 @@ window.openChecklist = function() {
   writeHistory("push");
   render();
 };
+window.openChecklistAt = function(type) {
+  loadChecklistState();
+  state.checklist = type;
+  writeHistory("push");
+  render();
+};
 window.closeChecklist = function() {
   if (history.state && history.state.barBuddy && history.state.view === "checklist") history.back();
   else { state.checklist = null; writeHistory("replace"); render(); }
 };
 window.setChecklist = function(type) { state.checklist = type; writeHistory("replace"); render(); };
 window.toggleCheck = function(key) {
-  // Check day hasn't rolled over
-  const today = bizDay();
-  if (!state.checklistState || !state.checklistState.checks) state.checklistState = {date: today, weekKey: weekKey(), checks: {}};
-  if (state.checklistState.date !== today) {
-    state.checklistState = {date: today, checks: keepStockOnly(state.checklistState.checks)};
-  }
+  loadChecklistState();
   state.checklistState.checks[key] = !state.checklistState.checks[key];
   saveChecklistState();
   render();
